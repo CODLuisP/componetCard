@@ -332,6 +332,7 @@ export default function App() {
   const cardCount = 5;
   const cardsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const frontFaceRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const frameId = useRef<number>(0);
   const lastTime = useRef<number>(-1);
 
@@ -444,8 +445,8 @@ export default function App() {
 
       // ── Mouse parallax — strongest on center card, zero beyond ±0.55 ──
       const centerW = Math.max(0, 1 - absOffset * 1.8);
-      const tiltX = -mouse.current.y * 13 * centerW;
-      const tiltY = mouse.current.x * 17 * centerW;
+      const tiltX = -mouse.current.y * 4 * centerW;
+      const tiltY = mouse.current.x * 12 * centerW;
 
       card.style.transform =
         `translateY(${y.toFixed(1)}px) translateZ(${z.toFixed(1)}px) ` +
@@ -456,6 +457,12 @@ export default function App() {
 
       const ff = frontFaceRefs.current[i];
       if (ff) ff.style.visibility = 'visible';
+
+      const lbl = labelRefs.current[i];
+      if (lbl) {
+        lbl.style.transform = `scale(${(1 / scale).toFixed(4)})`;
+        lbl.style.transformOrigin = 'left bottom';
+      }
     }
   };
 
@@ -521,7 +528,7 @@ export default function App() {
 
                   <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as React.CSSProperties}>
                     {/* Scene theme label — bottom-left */}
-                    <div className="absolute left-5 bottom-5 flex flex-col gap-[3px]">
+                    <div ref={(el) => { labelRefs.current[i] = el; }} className="absolute left-5 bottom-5 flex flex-col gap-[3px]">
                       <div
                         className="font-bold normal-case whitespace-nowrap leading-none"
                         style={{ fontSize: '13px', color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
