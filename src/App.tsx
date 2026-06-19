@@ -15,7 +15,7 @@ const CARD_SCENES: { type: SceneType; accent: string; label: string; cmd: string
 
 // A self-contained WebGL canvas that fills its parent and renders an
 // abstract animation for the given theme. Cleans up fully on unmount.
-function CardScene({ type, accent }: { type: SceneType; accent: string }) {
+function CardScene({ type, accent, onRegister }: { type: SceneType; accent: string; onRegister: (tick: ((t: number) => void) | null) => void }) {
   const mountRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -278,14 +278,10 @@ function CardScene({ type, accent }: { type: SceneType; accent: string }) {
       };
     }
 
-    const clock = new THREE.Clock();
-    let raf = 0;
-    const animate = () => {
-      update(clock.getElapsedTime());
+    onRegister((t: number) => {
+      update(t);
       renderer.render(scene, camera);
-      raf = requestAnimationFrame(animate);
-    };
-    animate();
+    });
 
     const ro = new ResizeObserver(() => {
       width = mount.clientWidth || width;
@@ -297,7 +293,7 @@ function CardScene({ type, accent }: { type: SceneType; accent: string }) {
     ro.observe(mount);
 
     return () => {
-      cancelAnimationFrame(raf);
+      onRegister(null);
       ro.disconnect();
       geometries.forEach((g) => g.dispose());
       materials.forEach((m) => m.dispose());
@@ -333,11 +329,15 @@ export default function App() {
   const cardsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const frontFaceRefs = useRef<(HTMLDivElement | null)[]>([]);
   const labelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const shineRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // One tick fn per scene — called from main RAF so there's only 1 loop total
+  const sceneTicksRef = useRef<((t: number) => void)[]>(Array(5).fill(() => {}));
   const frameId = useRef<number>(0);
   const lastTime = useRef<number>(-1);
 
   const progress = useRef<number>(0);
-  const mouse = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  // rawX/rawY = pixels from window center; targetX/targetY = normalized to card dims in [-1,1]
+  const mouse = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0, rawX: 0, rawY: 0 });
 
   const [metrics, setMetrics] = useState({
     cardW: 336,
@@ -346,14 +346,13 @@ export default function App() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const rx = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
-      const ry = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-      mouse.current.targetX = Math.max(-1, Math.min(1, rx));
-      mouse.current.targetY = Math.max(-1, Math.min(1, ry));
+      // Store raw pixel offset from window center — normalized against card dims in renderLoop
+      mouse.current.rawX = e.clientX - window.innerWidth / 2;
+      mouse.current.rawY = e.clientY - window.innerHeight / 2;
     };
     const handleMouseLeave = () => {
-      mouse.current.targetX = 0;
-      mouse.current.targetY = 0;
+      mouse.current.rawX = 0;
+      mouse.current.rawY = 0;
     };
     window.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseleave', handleMouseLeave);
@@ -389,8 +388,20 @@ export default function App() {
 
     progress.current += dt * 0.34;
 
-    mouse.current.x += (mouse.current.targetX - mouse.current.x) * 0.08;
-    mouse.current.y += (mouse.current.targetY - mouse.current.y) * 0.08;
+    // Tick all Three.js scenes from this single RAF — eliminates 5 competing RAF loops
+    const elapsed = performance.now() / 1000;
+    for (let j = 0; j < cardCount; j++) sceneTicksRef.current[j]?.(elapsed);
+
+    // Normalize raw pixel offset against card half-dims so ±1 = card edge (full tilt range on card)
+    const mx = mouse.current;
+    mx.targetX = Math.max(-1, Math.min(1, mx.rawX / (metrics.cardW / 2)));
+    mx.targetY = Math.max(-1, Math.min(1, mx.rawY / (metrics.cardH / 2)));
+
+    // Spring physics: k=38 stiffness, b=11 damping (slightly underdamped → natural settle)
+    mx.vx += ((mx.targetX - mx.x) * 38 - mx.vx * 11) * dt;
+    mx.vy += ((mx.targetY - mx.y) * 38 - mx.vy * 11) * dt;
+    mx.x += mx.vx * dt;
+    mx.y += mx.vy * dt;
 
     const { cardH } = metrics;
 
@@ -445,8 +456,8 @@ export default function App() {
 
       // ── Mouse parallax — strongest on center card, zero beyond ±0.55 ──
       const centerW = Math.max(0, 1 - absOffset * 1.8);
-      const tiltX = -mouse.current.y * 4 * centerW;
-      const tiltY = mouse.current.x * 12 * centerW;
+      const tiltX = -mouse.current.y * 8 * centerW;
+      const tiltY = mouse.current.x * 14 * centerW;
 
       card.style.transform =
         `translateY(${y.toFixed(1)}px) translateZ(${z.toFixed(1)}px) ` +
@@ -462,6 +473,18 @@ export default function App() {
       if (lbl) {
         lbl.style.transform = `scale(${(1 / scale).toFixed(4)})`;
         lbl.style.transformOrigin = 'left bottom';
+      }
+
+      const shine = shineRefs.current[i];
+      if (shine) {
+        if (centerW > 0.01) {
+          const sx = (mouse.current.x * metrics.cardW * 0.38).toFixed(1);
+          const sy = (mouse.current.y * metrics.cardH * 0.30).toFixed(1);
+          shine.style.transform = `translate(${sx}px, ${sy}px)`;
+          shine.style.opacity = (centerW * 0.75).toFixed(3);
+        } else {
+          shine.style.opacity = '0';
+        }
       }
     }
   };
@@ -524,7 +547,22 @@ export default function App() {
                       background: `radial-gradient(130% 90% at 75% 10%, ${sceneCfg.accent}26 0%, #06080f 60%, #05060a 100%)`,
                     }}
                   />
-                  <CardScene type={sceneCfg.type} accent={sceneCfg.accent} />
+                  <CardScene
+                    type={sceneCfg.type}
+                    accent={sceneCfg.accent}
+                    onRegister={(fn) => { sceneTicksRef.current[i] = fn ?? (() => {}); }}
+                  />
+
+                  {/* Spotlight — pre-baked gradient moved via GPU transform, zero repaint */}
+                  <div
+                    ref={(el) => { shineRefs.current[i] = el; }}
+                    className="absolute pointer-events-none"
+                    style={{
+                      inset: '-50%', width: '200%', height: '200%',
+                      background: 'radial-gradient(ellipse 35% 30% at 50% 50%, rgba(255,255,255,0.13) 0%, transparent 100%)',
+                      opacity: 0, zIndex: 5,
+                    }}
+                  />
 
                   <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as React.CSSProperties}>
                     {/* Scene theme label — bottom-left */}
