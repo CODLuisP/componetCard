@@ -6,11 +6,11 @@ import * as THREE from 'three';
 type SceneType = 'datatransfer' | 'github' | 'network' | 'servers' | 'database';
 
 const CARD_SCENES: { type: SceneType; accent: string; label: string; cmd: string }[] = [
-  { type: 'datatransfer', accent: '#00D1FF', label: 'data transfer', cmd: 'rsync -avz ./ host:/' },
-  { type: 'github', accent: '#A371F7', label: 'github', cmd: 'git push origin main' },
-  { type: 'network', accent: '#34C759', label: 'redes', cmd: 'ping 8.8.8.8' },
-  { type: 'servers', accent: '#E95420', label: 'linux · servers', cmd: 'sudo systemctl restart' },
-  { type: 'database', accent: '#7AA2F7', label: 'bases de datos', cmd: 'SELECT * FROM users;' },
+  { type: 'datatransfer', accent: '#00D1FF', label: 'Data Transfer', cmd: 'rsync -avz ./ host:/' },
+  { type: 'github', accent: '#A371F7', label: 'GitHub', cmd: 'git push origin main' },
+  { type: 'network', accent: '#34C759', label: 'Redes', cmd: 'ping 8.8.8.8' },
+  { type: 'servers', accent: '#E95420', label: 'Linux', cmd: 'sudo systemctl restart' },
+  { type: 'database', accent: '#7AA2F7', label: 'Bases de Datos', cmd: 'SELECT * FROM users;' },
 ];
 
 // A self-contained WebGL canvas that fills its parent and renders an
@@ -514,7 +514,7 @@ export default function App() {
                   <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15">
                     {/* Scene theme label — bottom-left */}
                     <div
-                      className="absolute left-5 sm:left-6 bottom-5 sm:bottom-6 font-mono text-[9px] sm:text-[11px] tracking-[0.25em] uppercase"
+                      className="absolute left-5 sm:left-6 bottom-5 sm:bottom-6 font-bold  text-[12px] sm:text-[12px] tracking-[0.25em] "
                       style={{ color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
                     >
                       {sceneCfg.label}
