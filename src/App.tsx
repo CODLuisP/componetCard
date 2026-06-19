@@ -6,7 +6,7 @@ import * as THREE from 'three';
 type SceneType = 'datatransfer' | 'architecture' | 'network' | 'servers' | 'database';
 
 const CARD_SCENES: { type: SceneType; accent: string; label: string; cmd: string; sub: string }[] = [
-  { type: 'datatransfer', accent: '#00D1FF', label: 'Estructuras & Algoritmos', cmd: 'O(log n) // binary search', sub: 'Big O · árboles · grafos · hash tables · sorting' },
+  { type: 'datatransfer', accent: '#2B7FFF', label: 'Estructuras & Algoritmos', cmd: 'O(log n) // binary search', sub: 'Big O · árboles · grafos · hash tables · sorting' },
   { type: 'architecture', accent: '#A371F7', label: 'Arquitectura de Software', cmd: 'GET /api/v1/users HTTP/2',  sub: 'SOLID · MVC · microservicios · REST · GraphQL' },
   { type: 'network',      accent: '#34C759', label: 'Redes & Dist. Systems',    cmd: 'curl -I https://api.dev',   sub: 'HTTP · DNS · load balancer · caching · scale' },
   { type: 'servers',      accent: '#E95420', label: 'Linux / CLI',              cmd: 'sudo systemctl restart',    sub: 'bash · permisos · SSH · cron · grep/awk/sed' },
