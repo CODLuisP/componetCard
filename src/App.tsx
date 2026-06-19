@@ -566,18 +566,12 @@ export default function App() {
 
                   <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as React.CSSProperties}>
                     {/* Scene theme label — bottom-left */}
-                    <div ref={(el) => { labelRefs.current[i] = el; }} className="absolute left-5 bottom-5 flex flex-col gap-[3px]">
+                    <div ref={(el) => { labelRefs.current[i] = el; }} className="absolute left-5 bottom-5 flex flex-col gap-0.75">
                       <div
                         className="font-bold normal-case whitespace-nowrap leading-none"
                         style={{ fontSize: '13px', color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
                       >
                         {sceneCfg.label}
-                      </div>
-                      <div
-                        className="font-mono text-[9px] text-white/70 tracking-wide whitespace-nowrap leading-none"
-                        style={{ maxWidth: '260px' }}
-                      >
-                        {sceneCfg.sub}
                       </div>
                     </div>
                     {/* Themed command — top-left */}
