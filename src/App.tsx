@@ -6,11 +6,11 @@ import * as THREE from 'three';
 type SceneType = 'datatransfer' | 'architecture' | 'network' | 'servers' | 'database';
 
 const CARD_SCENES: { type: SceneType; accent: string; label: string; cmd: string; sub: string }[] = [
-  { type: 'datatransfer', accent: '#2B7FFF', label: 'Estructuras & Algoritmos', cmd: 'O(log n) // binary search', sub: 'Big O · árboles · grafos · hash tables · sorting' },
-  { type: 'architecture', accent: '#A371F7', label: 'Arquitectura de Software', cmd: 'GET /api/v1/users HTTP/2',  sub: 'SOLID · MVC · microservicios · REST · GraphQL' },
-  { type: 'network',      accent: '#34C759', label: 'Redes & Dist. Systems',    cmd: 'curl -I https://api.dev',   sub: 'HTTP · DNS · load balancer · caching · scale' },
-  { type: 'servers',      accent: '#E95420', label: 'Linux / CLI',              cmd: 'sudo systemctl restart',    sub: 'bash · permisos · SSH · cron · grep/awk/sed' },
-  { type: 'database',     accent: '#7AA2F7', label: 'Bases de Datos',           cmd: 'SELECT * FROM users;',      sub: 'SQL · NoSQL · ACID · índices · optimización' },
+  { type: 'datatransfer', accent: '#2B7FFF', label: 'Estructuras & Algoritmos', cmd: 'O(log n) // binary search', sub: 'Árboles · Grafos · Hash tables · Sorting' },
+  { type: 'architecture', accent: '#A371F7', label: 'Arquitectura de Software', cmd: 'GET /api/v1/users HTTP/2',  sub: 'SOLID · MVC · Microservicios · REST · GraphQL' },
+  { type: 'network',      accent: '#34C759', label: 'Redes & Dist. Systems',    cmd: 'curl -I https://api.dev',   sub: 'HTTP · DNS · Load balancer · Caching · Scale' },
+  { type: 'servers',      accent: '#E95420', label: 'Linux / CLI',              cmd: 'sudo systemctl restart',    sub: 'Bash · Permisos · SSH · Cron · Grep/awk/sed' },
+  { type: 'database',     accent: '#7AA2F7', label: 'Bases de Datos',           cmd: 'SELECT * FROM users;',      sub: 'SQL · NoSQL · ACID · índices · Optimización' },
 ];
 
 // A self-contained WebGL canvas that fills its parent and renders an
@@ -574,8 +574,8 @@ export default function App() {
                         {sceneCfg.label}
                       </div>
                       <div
-                        className="font-mono text-[7px] text-gray-200 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none"
-                        style={{ maxWidth: '200px' }}
+                        className="font-mono text-[9px] text-white/70 tracking-wide whitespace-nowrap leading-none"
+                        style={{ maxWidth: '260px' }}
                       >
                         {sceneCfg.sub}
                       </div>
