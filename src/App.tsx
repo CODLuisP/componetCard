@@ -316,29 +316,7 @@ const CARD_COLORS = [
 ];
 void CARD_COLORS;
 
-// Back-face content: terminal commands / code lines themed to each card's scene.
-const CARD_BACK = [
-  {
-    title: '~/data-transfer',
-    lines: ['$ curl -X POST api/sync', '> streaming 1.2GB ████░ 84%', '200 OK · 14ms · gzip'],
-  },
-  {
-    title: '~/repo (main)',
-    lines: ['$ git add -A && git commit', '$ git push origin main', '✓ 3 files changed, 2 insertions'],
-  },
-  {
-    title: '~/net',
-    lines: ['$ ping 10.0.0.1', '64 bytes · time=2.1ms ttl=64', '$ netstat -tunlp'],
-  },
-  {
-    title: 'root@server',
-    lines: ['$ ssh root@10.0.0.4', '$ systemctl status nginx', '● active (running) · uptime 42d'],
-  },
-  {
-    title: '~/db (psql)',
-    lines: ['$ psql -U admin app', 'SELECT * FROM users LIMIT 10;', '10 rows · 3ms'],
-  },
-];
+
 
 export default function App() {
   const cardCount = 5;
@@ -517,7 +495,7 @@ export default function App() {
                 {/* FRONT FACE */}
                 <div
                   ref={(el) => { frontFaceRefs.current[i] = el; }}
-                  className="absolute inset-0 rounded-[16px] overflow-hidden"
+                  className="absolute inset-0 rounded-2xl overflow-hidden"
                   style={{
                     backgroundColor: '#0f0f0f',
                     boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.15)',
@@ -526,7 +504,7 @@ export default function App() {
                 >
                   {/* Accent glow backdrop */}
                   <div
-                    className="absolute inset-0 rounded-[16px]"
+                    className="absolute inset-0 rounded-2xl"
                     style={{
                       background: `radial-gradient(130% 90% at 75% 10%, ${sceneCfg.accent}26 0%, #06080f 60%, #05060a 100%)`,
                     }}
@@ -552,14 +530,7 @@ export default function App() {
                       </span>
                     </div>
                     {/* Owen wordmark — top-right */}
-                    <div className="absolute right-5 sm:right-6 top-5 sm:top-6 opacity-95">
-                      <span
-                        className="font-semibold italic text-white text-[20px] sm:text-[26px] leading-none tracking-tight"
-                        style={{ textShadow: '0 1px 8px rgba(0,0,0,0.45)' }}
-                      >
-                        Owen
-                      </span>
-                    </div>
+             
                     {/* Code glyph — bottom-right */}
                     <div className="absolute right-5 sm:right-6 bottom-5 sm:bottom-6 opacity-90">
                       <svg
