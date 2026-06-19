@@ -3,14 +3,14 @@ import * as THREE from 'three';
 
 // Three.js animated scenes — one per card: data transfer, GitHub, networks,
 // servers/Linux and databases.
-type SceneType = 'datatransfer' | 'github' | 'network' | 'servers' | 'database';
+type SceneType = 'datatransfer' | 'architecture' | 'network' | 'servers' | 'database';
 
-const CARD_SCENES: { type: SceneType; accent: string; label: string; cmd: string }[] = [
-  { type: 'datatransfer', accent: '#00D1FF', label: 'Data Transfer', cmd: 'rsync -avz ./ host:/' },
-  { type: 'github', accent: '#A371F7', label: 'GitHub', cmd: 'git push origin main' },
-  { type: 'network', accent: '#34C759', label: 'Redes', cmd: 'ping 8.8.8.8' },
-  { type: 'servers', accent: '#E95420', label: 'Linux', cmd: 'sudo systemctl restart' },
-  { type: 'database', accent: '#7AA2F7', label: 'Bases de Datos', cmd: 'SELECT * FROM users;' },
+const CARD_SCENES: { type: SceneType; accent: string; label: string; cmd: string; sub: string }[] = [
+  { type: 'datatransfer', accent: '#00D1FF', label: 'Estructuras & Algoritmos', cmd: 'O(log n) // binary search', sub: 'Big O · árboles · grafos · hash tables · sorting' },
+  { type: 'architecture', accent: '#A371F7', label: 'Arquitectura de Software', cmd: 'GET /api/v1/users HTTP/2',  sub: 'SOLID · MVC · microservicios · REST · GraphQL' },
+  { type: 'network',      accent: '#34C759', label: 'Redes & Dist. Systems',    cmd: 'curl -I https://api.dev',   sub: 'HTTP · DNS · load balancer · caching · scale' },
+  { type: 'servers',      accent: '#E95420', label: 'Linux / CLI',              cmd: 'sudo systemctl restart',    sub: 'bash · permisos · SSH · cron · grep/awk/sed' },
+  { type: 'database',     accent: '#7AA2F7', label: 'Bases de Datos',           cmd: 'SELECT * FROM users;',      sub: 'SQL · NoSQL · ACID · índices · optimización' },
 ];
 
 // A self-contained WebGL canvas that fills its parent and renders an
@@ -91,50 +91,60 @@ function CardScene({ type, accent }: { type: SceneType; accent: string }) {
         });
         group.rotation.y = Math.sin(t * 0.25) * 0.18;
       };
-    } else if (type === 'github') {
-      // A branching commit graph: trunk + a branch that merges back, nodes pulse.
-      type N = { p: THREE.Vector3 };
-      const nodes: N[] = [];
-      const trunkY = -0.4, branchY = 0.9;
-      const xs = [-2.4, -1.4, -0.4, 0.6, 1.6, 2.5];
-      xs.forEach((x) => nodes.push({ p: new THREE.Vector3(x, trunkY, 0) }));
-      // branch nodes above the middle of the trunk
-      const bxs = [-0.9, 0.1, 1.1];
-      bxs.forEach((x) => nodes.push({ p: new THREE.Vector3(x, branchY, 0) }));
+    } else if (type === 'architecture') {
+      // Blueprint component diagram: wireframe boxes (EdgesGeometry) arranged in
+      // three layers (API → services → stores) connected by dependency lines with
+      // travelling signal dots. The wireframe look is instantly "architecture", not "database".
+      const boxGeo = new THREE.BoxGeometry(0.72, 0.33, 0.26);
+      const edgesGeo = new THREE.EdgesGeometry(boxGeo);
+      const wireMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.88 });
+      geometries.push(boxGeo, edgesGeo); materials.push(wireMat);
 
-      const nodeGeo = new THREE.SphereGeometry(0.15, 18, 18);
-      const nodeMat = new THREE.MeshStandardMaterial({
-        color, emissive: color, emissiveIntensity: 0.7, metalness: 0.4, roughness: 0.3,
-      });
-      geometries.push(nodeGeo); materials.push(nodeMat);
-      const meshes: THREE.Mesh[] = [];
-      nodes.forEach((n) => {
-        const m = new THREE.Mesh(nodeGeo, nodeMat);
-        m.position.copy(n.p);
-        group.add(m);
-        meshes.push(m);
-      });
-
-      const edges: [number, number][] = [
-        [0, 1], [1, 2], [2, 3], [3, 4], [4, 5], // trunk
-        [1, 6], [6, 7], [7, 8], [8, 4],          // branch off node1 ... merge into node4
+      const positions: THREE.Vector3[] = [
+        new THREE.Vector3( 0,     1.25, 0),  // API gateway  (top)
+        new THREE.Vector3(-1.35,  0.1,  0),  // service A
+        new THREE.Vector3( 0,     0.1,  0),  // service B
+        new THREE.Vector3( 1.35,  0.1,  0),  // service C
+        new THREE.Vector3(-0.67, -1.1,  0),  // data store A (bottom)
+        new THREE.Vector3( 0.67, -1.1,  0),  // data store B
       ];
-      const edgePts: number[] = [];
-      edges.forEach(([a, b]) => {
-        edgePts.push(nodes[a].p.x, nodes[a].p.y, 0, nodes[b].p.x, nodes[b].p.y, 0);
-      });
-      const lineGeo = new THREE.BufferGeometry();
-      lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(edgePts, 3));
-      const lineMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.6 });
-      group.add(new THREE.LineSegments(lineGeo, lineMat));
-      geometries.push(lineGeo); materials.push(lineMat);
 
+      positions.forEach((p) => {
+        const wire = new THREE.LineSegments(edgesGeo, wireMat);
+        wire.position.copy(p);
+        group.add(wire);
+      });
+
+      const connPairs: [number, number][] = [
+        [0, 1], [0, 2], [0, 3],
+        [1, 4], [2, 4], [2, 5], [3, 5],
+      ];
+      const connPts: number[] = [];
+      connPairs.forEach(([a, b]) => {
+        connPts.push(...positions[a].toArray(), ...positions[b].toArray());
+      });
+      const connGeo = new THREE.BufferGeometry();
+      connGeo.setAttribute('position', new THREE.Float32BufferAttribute(connPts, 3));
+      const connMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.38 });
+      group.add(new THREE.LineSegments(connGeo, connMat));
+      geometries.push(connGeo); materials.push(connMat);
+
+      const dotGeo = new THREE.SphereGeometry(0.065, 8, 8);
+      const dotMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: color, emissiveIntensity: 1.0 });
+      geometries.push(dotGeo); materials.push(dotMat);
+      const signals = connPairs.map(([a, b], idx) => {
+        const m = new THREE.Mesh(dotGeo, dotMat);
+        group.add(m);
+        return { m, a, b, p: idx / connPairs.length, speed: 0.30 + 0.08 * (idx % 3) };
+      });
+
+      group.scale.setScalar(0.86);
       update = (t) => {
-        group.rotation.y = Math.sin(t * 0.45) * 0.5;
-        group.rotation.x = Math.cos(t * 0.3) * 0.14;
-        meshes.forEach((m, idx) => {
-          const s = 1 + Math.max(0, Math.sin(t * 2 - idx * 0.5)) * 0.6;
-          m.scale.setScalar(s);
+        group.rotation.y = Math.sin(t * 0.28) * 0.38;
+        group.rotation.x = Math.cos(t * 0.18) * 0.07;
+        signals.forEach((sig) => {
+          sig.p = (sig.p + sig.speed * 0.016) % 1;
+          sig.m.position.lerpVectors(positions[sig.a], positions[sig.b], sig.p);
         });
       };
     } else if (type === 'network') {
@@ -513,11 +523,19 @@ export default function App() {
 
                   <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15">
                     {/* Scene theme label — bottom-left */}
-                    <div
-                      className="absolute left-5 sm:left-6 bottom-5 sm:bottom-6 font-bold  text-[12px] sm:text-[12px] tracking-[0.25em] "
-                      style={{ color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
-                    >
-                      {sceneCfg.label}
+                    <div className="absolute left-5 sm:left-6 bottom-5 sm:bottom-6 flex flex-col gap-[3px]">
+                      <div
+                        className="font-bold text-[11px] sm:text-[12px] tracking-[0.18em] uppercase"
+                        style={{ color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
+                      >
+                        {sceneCfg.label}
+                      </div>
+                      <div
+                        className="font-mono text-[6px] sm:text-[7px] text-white/40 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis"
+                        style={{ maxWidth: '200px' }}
+                      >
+                        {sceneCfg.sub}
+                      </div>
                     </div>
                     {/* Themed command — top-left */}
                     <div className="absolute left-5 sm:left-6 top-5 sm:top-6 flex items-center gap-1">
