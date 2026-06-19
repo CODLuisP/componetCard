@@ -450,8 +450,7 @@ export default function App() {
       card.style.transform =
         `translateY(${y.toFixed(1)}px) translateZ(${z.toFixed(1)}px) ` +
         `scale(${scale.toFixed(4)}) ` +
-        `rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) ` +
-        `rotateZ(-3deg)`;
+        `rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg)`;
       card.style.opacity = Math.min(1, opacity).toFixed(3);
       card.style.zIndex = String(Math.round(200 - absOffset * 40));
 
@@ -499,7 +498,6 @@ export default function App() {
                   width: `${metrics.cardW}px`,
                   height: `${metrics.cardH}px`,
                   transformStyle: 'flat',
-                  willChange: 'transform, opacity',
                 }}
               >
                 {/* FRONT FACE */}
@@ -521,17 +519,17 @@ export default function App() {
                   />
                   <CardScene type={sceneCfg.type} accent={sceneCfg.accent} />
 
-                  <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15">
+                  <div className="absolute inset-0 p-5 sm:p-6 text-white h-full w-full font-sans z-10 bg-black/15" style={{ WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' } as React.CSSProperties}>
                     {/* Scene theme label — bottom-left */}
-                    <div className="absolute left-5 sm:left-6 bottom-5 sm:bottom-6 flex flex-col gap-[3px]">
+                    <div className="absolute left-5 bottom-5 flex flex-col gap-[3px]">
                       <div
-                        className="font-bold text-[11px] sm:text-[12px] tracking-[0.18em] uppercase"
-                        style={{ color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
+                        className="font-bold normal-case whitespace-nowrap leading-none"
+                        style={{ fontSize: '13px', color: sceneCfg.accent, textShadow: '0 0 8px rgba(0,0,0,0.6)' }}
                       >
                         {sceneCfg.label}
                       </div>
                       <div
-                        className="font-mono text-[6px] sm:text-[7px] text-white/40 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis"
+                        className="font-mono text-[7px] text-gray-200 tracking-tight whitespace-nowrap overflow-hidden text-ellipsis leading-none"
                         style={{ maxWidth: '200px' }}
                       >
                         {sceneCfg.sub}
